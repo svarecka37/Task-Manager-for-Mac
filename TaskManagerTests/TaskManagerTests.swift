@@ -26,6 +26,27 @@ final class TaskManagerTests: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
 
+    func testProcessParser() throws {
+        // sample ps output (header + two lines)
+        let sample = "PID PPID COMMAND %CPU %MEM\n1234 1 /usr/bin/foo 12.3 1.0\n5678 123 /Applications/Bar.app/Contents/MacOS/Bar 0.5 2.2\n"
+        let parsed = ProcessStore.parsePS(output: sample)
+        XCTAssertEqual(parsed.count, 2)
+
+        let first = parsed[0]
+        XCTAssertEqual(first.pid, 1234)
+        XCTAssertEqual(first.ppid, 1)
+        XCTAssertEqual(first.name, "/usr/bin/foo")
+        XCTAssertEqual(first.cpu, 12.3, accuracy: 0.001)
+        XCTAssertEqual(first.mem, 1.0, accuracy: 0.001)
+
+        let second = parsed[1]
+        XCTAssertEqual(second.pid, 5678)
+        XCTAssertEqual(second.ppid, 123)
+        XCTAssertEqual(second.name, "/Applications/Bar.app/Contents/MacOS/Bar")
+        XCTAssertEqual(second.cpu, 0.5, accuracy: 0.001)
+        XCTAssertEqual(second.mem, 2.2, accuracy: 0.001)
+    }
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         self.measure {

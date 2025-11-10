@@ -10,30 +10,38 @@ import XCTest
 final class TaskManagerUITests: XCTestCase {
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
 
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
 
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+
     }
 
     @MainActor
     func testExample() throws {
-        // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
+        // Verify main title exists. Try a few strategies to make the check robust on macOS:
+        // 1) visible static text label "Task Manager"
+        // 2) static text with accessibility identifier "mainTitle"
+        // 3) static text inside the first window
+        let titleByLabel = app.staticTexts["Task Manager"].firstMatch
+        let titleById = app.staticTexts["mainTitle"].firstMatch
+        let windowTitle = app.windows.firstMatch.staticTexts["Task Manager"].firstMatch
+    let anyElementById = app.descendants(matching: .any).matching(identifier: "mainTitleElement").firstMatch
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        let found = titleByLabel.waitForExistence(timeout: 8)
+            || titleById.waitForExistence(timeout: 2)
+            || windowTitle.waitForExistence(timeout: 2)
+            || anyElementById.waitForExistence(timeout: 2)
+
+        XCTAssertTrue(found, "Main title should exist")
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
